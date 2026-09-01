@@ -168,7 +168,7 @@ Default in container: same as default value.
 <dt>GITHUB_ORG_ID
 <dd>ID of your GitHub organization. If set, Errbit will create user accounts for users in your GitHub organization who sign into Errbit without having a user account
 <dt>GITHUB_ACCESS_SCOPE
-<dd>OAuth scope to request from users when they sign in through GitHub
+<dd>OAuth scope to request from users when they sign in through GitHub. Creating and closing issues with a user's own account needs [repo] or [public_repo]; with [] they can still file issues by hand through the "report issue" page, see <a href="../README.md#read-only-github-integration">Read-only GitHub integration</a>
 <dd>defaults to [repo]
 <dt>GITHUB_SITE_TITLE</dt>
 <dd>The title to use for GitHub. This value is whatever you want displayed in the Errbit UI when referring to GitHub.</dd>

@@ -165,6 +165,7 @@ RSpec.describe "problems/show.html.erb", type: :view do
         render
 
         expect(action_bar).to have_no_selector("span a.create-issue")
+        expect(action_bar).to have_selector("span a.report-issue", text: "report issue")
       end
 
       # Such users fall back to the credentials configured on the app, whose
@@ -222,6 +223,38 @@ RSpec.describe "problems/show.html.erb", type: :view do
         expect(action_bar).to have_selector("span a.close-issue", text: "close issue")
       end
 
+      it "should offer the report issue link without any issue tracker when the app has a github repo" do
+        problem = create(:problem_with_comments, app: app)
+
+        allow(view).to receive(:problem).and_return(problem)
+        allow(view).to receive(:app).and_return(problem.app)
+
+        render
+
+        expect(action_bar).to have_selector(
+          "span a.report-issue[href='#{issue_report_app_problem_path(problem.app, problem)}']",
+          text: "report issue"
+        )
+        expect(action_bar).to have_no_selector("span a.create-issue")
+      end
+
+      it "should offer go to and unlink for an issue linked by hand without a tracker" do
+        problem = create(:problem_with_comments, app: app, issue_link: "https://github.com/test_user/test_repo/issues/1")
+
+        allow(view).to receive(:problem).and_return(problem)
+        allow(view).to receive(:app).and_return(problem.app)
+
+        render
+
+        expect(action_bar).to have_selector(
+          "span a.goto-issue[href='https://github.com/test_user/test_repo/issues/1']", text: "go to issue"
+        )
+        expect(action_bar).to have_selector(
+          "span a.unlink-issue[href='#{unlink_issue_app_problem_path(problem.app, problem)}']", text: "unlink issue"
+        )
+        expect(action_bar).to have_no_selector("span a.close-issue")
+      end
+
       context "without issue tracker associate on app" do
         let(:problem) { Problem.new(new_record: false, app: app) }
 
@@ -231,6 +264,7 @@ RSpec.describe "problems/show.html.erb", type: :view do
           render
 
           expect(view.content_for(:action_bar)).not_to match(/create issue/)
+          expect(view.content_for(:action_bar)).not_to match(/report issue/)
         end
       end
 

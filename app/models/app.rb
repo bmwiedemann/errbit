@@ -127,6 +127,20 @@ class App
     "#{github_url}/blob/#{repo_branch}/#{file}"
   end
 
+  def github_issues_url
+    "#{github_url}/issues" if github_repo?
+  end
+
+  def github_new_issue_url(title = nil)
+    return unless github_repo?
+
+    if title.present?
+      "#{github_url}/issues/new?title=#{CGI.escape(title)}"
+    else
+      "#{github_url}/issues/new"
+    end
+  end
+
   def bitbucket_repo?
     bitbucket_repo.present?
   end

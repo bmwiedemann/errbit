@@ -52,6 +52,8 @@ Rails.application.routes.draw do
         patch :resolve
         patch :unresolve
         post :create_issue
+        get :issue_report
+        post :link_issue
         post :close_issue
         delete :unlink_issue
       end

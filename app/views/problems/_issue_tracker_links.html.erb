@@ -55,4 +55,30 @@
       <% end %>
     </span>
   <% end %>
+
+<%# Issues linked by hand through problems#link_issue, without a tracker %>
+<% elsif problem.issue_link.present? %>
+  <span>
+    <%= link_to problem.issue_link, class: "goto-issue issue-tracker-button" do %>
+      go to issue
+    <% end %>
+  </span>
+
+  <span>
+    <%= link_to unlink_issue_app_problem_path(app, problem),
+        method: :delete,
+        data: { confirm: "Unlink err issues?" },
+        class: "unlink-issue issue-tracker-button" do %>
+      unlink issue
+    <% end %>
+  </span>
+<% end %>
+
+<% if app.github_repo? %>
+  <span class="github">
+    <%= link_to issue_report_app_problem_path(app, problem),
+        class: "report-issue issue-tracker-button" do %>
+      report issue
+    <% end %>
+  </span>
 <% end %>

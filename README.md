@@ -139,8 +139,24 @@ few others that could make sense for your needs:
   <dt>GITHUB_ACCESS_SCOPE="['public_repo']"</dt>
   <dd>Allow creating issues for public repos only</dd>
   <dt>GITHUB_ACCESS_SCOPE="[]"</dt>
-  <dd>No permissions at all, but allows Errbit login through GitHub</dd>
+  <dd>No issue permissions, but allows Errbit login through GitHub; see
+  <a href="#read-only-github-integration">Read-only GitHub integration</a></dd>
 </dl>
+
+#### Read-only GitHub integration
+
+`repo` and `public_repo` grant write access to *every* repository the user can
+reach. To avoid that, run with `GITHUB_ACCESS_SCOPE="[]"`: problem pages of an
+App with a **GitHub repo** then offer a **report issue** link showing the issue
+title and Markdown body with copy buttons, next to a link to GitHub's new issue
+form for you to paste them into.
+
+Errbit never sees the resulting issue URL, so paste it into the **Link the
+issue** field at the bottom of the same page to get the usual **go to issue**
+and **unlink issue** buttons. **close issue** still needs a write scope.
+
+Users who have not linked a GitHub profile are unaffected: for them the tracker
+still uses the credentials configured on the App.
 
 * `GITHUB_ORG_ID` is an optional environment variable you can set to your own
   GitHub organization id. If set, only users of the specified GitHub

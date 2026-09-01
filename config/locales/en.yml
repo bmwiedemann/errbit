@@ -155,6 +155,20 @@ en:
       up: up
       resolve: resolve
       notice_by_id: "Notice: %{notice_id}"
+    issue_report:
+      title: "Issue report"
+      issue_title: "Issue title"
+      issue_body: "Issue body (Markdown)"
+      copy: "Copy to clipboard"
+      open_new_github_issue: "new GitHub issue"
+      browse_github_issues: "GitHub issues"
+      up: "back to error"
+      link_issue: "Link the issue"
+      link_issue_help: "Errbit does not learn the URL of an issue you filed yourself. Paste it here to link it to this error."
+      link: "Link issue"
+    link_issue:
+      success: "The issue has been linked to this error."
+      invalid_url: "That does not look like an issue URL. It must start with http:// or https://"
     sparkline:
       graph-2-weeks: Graph (2 weeks)
       graph-24-hours: Graph (24 hours)

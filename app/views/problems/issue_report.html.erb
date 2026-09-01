@@ -1,0 +1,48 @@
+<% content_for :page_title, "#{t(".title")} - #{problem.message}" %>
+<% content_for :title, t(".title") %>
+
+<% content_for :action_bar do %>
+  <% if app.github_repo? %>
+    <span class="github">
+      <%= link_to t(".open_new_github_issue"), app.github_new_issue_url(@issue.title),
+          target: "_blank", rel: "noopener" %>
+    </span>
+    <span class="github">
+      <%= link_to t(".browse_github_issues"), app.github_issues_url,
+          target: "_blank", rel: "noopener" %>
+    </span>
+  <% end %>
+
+  <span><%= link_to t(".up"), app_problem_path(app, problem), class: "up" %></span>
+<% end %>
+
+<div class="window">
+  <h3><%= t(".issue_title") %></h3>
+
+  <div data-controller="clipboard">
+    <%= text_field_tag :issue_title, @issue.title, readonly: true,
+        style: "width: 100%",
+        data: {clipboard_target: "source", action: "click->clipboard#select"} %>
+    <button type="button" data-action="clipboard#copy"><%= t(".copy") %></button>
+  </div>
+
+  <h3><%= t(".issue_body") %></h3>
+
+  <div data-controller="clipboard">
+    <%= text_area_tag :issue_body, @issue_body, readonly: true, rows: 25,
+        style: "width: 100%; font-family: monospace",
+        data: {clipboard_target: "source", action: "click->clipboard#select"} %>
+    <button type="button" data-action="clipboard#copy"><%= t(".copy") %></button>
+  </div>
+
+  <h3><%= t(".link_issue") %></h3>
+
+  <p><%= t(".link_issue_help") %></p>
+
+  <%= form_tag link_issue_app_problem_path(app, problem) do %>
+    <%= url_field_tag :issue_link, problem.issue_link,
+        placeholder: ("#{app.github_issues_url}/123" if app.github_repo?),
+        style: "width: 100%" %>
+    <%= submit_tag t(".link") %>
+  <% end %>
+</div>

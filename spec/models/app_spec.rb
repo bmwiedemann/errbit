@@ -134,6 +134,40 @@ RSpec.describe App, type: :model do
     end
   end
 
+  describe "#github_issues_url" do
+    it "resolves to the issues page of the repo" do
+      app = create(:app, github_repo: "errbit/errbit")
+
+      expect(app.github_issues_url).to eq("https://github.com/errbit/errbit/issues")
+    end
+
+    it "is nil without a github_repo" do
+      app = create(:app)
+
+      expect(app.github_issues_url).to be_nil
+    end
+  end
+
+  describe "#github_new_issue_url" do
+    it "resolves to the new issue page of the repo" do
+      app = create(:app, github_repo: "errbit/errbit")
+
+      expect(app.github_new_issue_url).to eq("https://github.com/errbit/errbit/issues/new")
+    end
+
+    it "prefills the title with escaping" do
+      app = create(:app, github_repo: "errbit/errbit")
+
+      expect(app.github_new_issue_url("a [title]")).to eq("https://github.com/errbit/errbit/issues/new?title=a+%5Btitle%5D")
+    end
+
+    it "is nil without a github_repo" do
+      app = create(:app)
+
+      expect(app.github_new_issue_url).to be_nil
+    end
+  end
+
   describe "#github_repo?" do
     it "is true when there is a github_repo" do
       app = create(:app, github_repo: "errbit/errbit")

@@ -91,6 +91,28 @@ class ProblemsController < ApplicationController
     redirect_to app_problem_path(app, problem)
   end
 
+  def issue_report
+    @issue = Issue.new(problem: problem, user: current_user)
+
+    @issue_body = render_to_string(*@issue.render_body_args)
+  end
+
+  # Issues filed by hand through #issue_report are unknown to Errbit, so we let
+  # the reporter paste the resulting URL back in.
+  def link_issue
+    link = params[:issue_link].to_s.strip
+
+    if http_url?(link)
+      problem.update(link_issue_attributes(link))
+
+      flash[:success] = t(".success")
+    else
+      flash[:error] = t(".invalid_url")
+    end
+
+    redirect_to app_problem_path(app, problem)
+  end
+
   def unlink_issue
     problem.update_attribute(:issue_link, nil)
 
@@ -172,6 +194,26 @@ class ProblemsController < ApplicationController
     flash[:notice] = I18n.t("controllers.problems.flash.no_select_problem")
 
     redirect_back_or_to(root_path)
+  end
+
+  # A configured tracker already decides the issue_type, see Problem#issue_type,
+  # so only stamp one for the GitHub repo that #issue_report reports against
+  # when the app has no tracker at all. github_repo is also set just for the
+  # backtrace source links, so it must not label an issue of another kind.
+  def link_issue_attributes(link)
+    return {issue_link: link} if app.issue_tracker_configured? || !app.github_repo?
+
+    {issue_link: link, issue_type: "github"}
+  end
+
+  # Guards against javascript: and friends, since the link is rendered as an
+  # href on the problem page afterwards.
+  def http_url?(link)
+    uri = URI.parse(link)
+
+    uri.is_a?(URI::HTTP) && uri.host.present?
+  rescue URI::InvalidURIError
+    false
   end
 
   # Both creating and closing a GitHub issue go through the user's own OAuth

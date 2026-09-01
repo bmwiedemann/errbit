@@ -411,6 +411,124 @@ RSpec.describe ProblemsController, type: :controller do
     end
   end
 
+  describe "GET /apps/:app_id/problems/:id/issue_report" do
+    before { sign_in user }
+
+    let(:notice) { NoticeDecorator.new(create(:notice)) }
+    let(:problem) { ProblemDecorator.new(notice.problem) }
+
+    before do
+      allow(controller).to receive(:problem).and_return(problem)
+      allow(controller).to receive(:current_user).and_return(user)
+    end
+
+    it "responds successfully without an issue tracker" do
+      get :issue_report, params: {app_id: problem.app.id, id: problem.id}
+
+      expect(response).to have_http_status(:ok)
+      expect(response).to render_template("problems/issue_report")
+    end
+
+    context "when rendering views" do
+      render_views
+
+      it "contains the copy-pastable report body and title" do
+        get :issue_report, params: {app_id: problem.app.id, id: problem.id}
+
+        title = "[#{problem.environment}][#{problem.where}] #{problem.message.to_s.truncate(100)}"
+
+        expect(response.body).to include(app_problem_url(problem.app, problem))
+        expect(response.body).to include(ERB::Util.html_escape(title))
+      end
+
+      it "renders the body as bare markdown, without the page layout" do
+        get :issue_report, params: {app_id: problem.app.id, id: problem.id}
+
+        expect(assigns(:issue_body)).to include("[See this exception on Errbit]")
+        expect(assigns(:issue_body)).not_to include("<!DOCTYPE html>")
+      end
+
+      it "links to the github issues pages when the app has a github repo" do
+        problem.app.update(github_repo: "errbit/errbit")
+
+        get :issue_report, params: {app_id: problem.app.id, id: problem.id}
+
+        expect(response.body).to include("https://github.com/errbit/errbit/issues/new?title=")
+        expect(response.body).to include("https://github.com/errbit/errbit/issues")
+      end
+    end
+  end
+
+  describe "POST /apps/:app_id/problems/:id/link_issue" do
+    before { sign_in user }
+
+    let(:app) { create(:app, github_repo: "errbit/errbit") }
+
+    let(:url) { "https://github.com/errbit/errbit/issues/123" }
+
+    it "links the pasted issue url to the problem" do
+      post :link_issue, params: {app_id: app.id, id: problem.id, issue_link: url}
+
+      expect(response).to redirect_to(app_problem_path(app, problem))
+
+      expect(flash[:success]).to eq(I18n.t("problems.link_issue.success"))
+
+      expect(problem.reload.issue_link).to eq(url)
+      expect(problem.issue_type).to eq("github")
+    end
+
+    it "strips surrounding whitespace from the pasted url" do
+      post :link_issue, params: {app_id: app.id, id: problem.id, issue_link: "  #{url}\n"}
+
+      expect(problem.reload.issue_link).to eq(url)
+    end
+
+    it "replaces a link that is already there" do
+      problem.update(issue_link: "https://github.com/errbit/errbit/issues/1")
+
+      post :link_issue, params: {app_id: app.id, id: problem.id, issue_link: url}
+
+      expect(problem.reload.issue_link).to eq(url)
+    end
+
+    it "leaves issue_type alone without a github repo" do
+      app.update(github_repo: nil)
+      problem.update(issue_type: "mock")
+
+      post :link_issue, params: {app_id: app.id, id: problem.id, issue_link: url}
+
+      expect(problem.reload.issue_link).to eq(url)
+      expect(problem.issue_type).to eq("mock")
+    end
+
+    # github_repo is also set just for the backtrace source links, so it must
+    # not label an issue that the configured tracker knows to be of another kind.
+    it "leaves issue_type to a configured tracker of another kind" do
+      allow(ErrbitPlugin::Registry).to receive(:issue_trackers)
+        .and_return({"mock" => ErrbitPlugin::MockIssueTracker})
+
+      app.update(issue_tracker: IssueTracker.new(type_tracker: "mock", options: {foo: "one", bar: "two"}))
+
+      post :link_issue, params: {app_id: app.id, id: problem.id, issue_link: url}
+
+      expect(problem.reload.issue_link).to eq(url)
+      expect(problem.attributes["issue_type"]).to be_nil
+      expect(problem.issue_type).to eq("mock")
+    end
+
+    ["javascript:alert(1)", "data:text/html,hi", "not a url", "", "ftp://example.com/1"].each do |bad|
+      it "refuses #{bad.inspect}" do
+        post :link_issue, params: {app_id: app.id, id: problem.id, issue_link: bad}
+
+        expect(response).to redirect_to(app_problem_path(app, problem))
+
+        expect(flash[:error]).to eq(I18n.t("problems.link_issue.invalid_url"))
+
+        expect(problem.reload.issue_link).to be_nil
+      end
+    end
+  end
+
   describe "POST /apps/:app_id/problems/:id/close_issue" do
     before { sign_in user }
 
