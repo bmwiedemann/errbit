@@ -29,6 +29,20 @@ RSpec.describe "problems/index.html.erb", type: :view do
     end
   end
 
+  # problems/_table looks the "go to issue" icon up by issue_type, so every
+  # tracker label that ends up in Problem#issue_type needs a matching asset.
+  describe "issue link" do
+    it "links a github_app issue with the GitHub icon" do
+      problem_1.update(issue_type: "github_app", issue_link: "https://github.com/errbit/errbit/issues/1347")
+
+      render
+
+      expect(rendered).to have_selector(
+        "td.issue_link a[href='https://github.com/errbit/errbit/issues/1347'] img[src*='github_app_goto']"
+      )
+    end
+  end
+
   describe "show/hide resolved button behavior" do
     it "displays unresolved errors title and button" do
       allow(view).to receive(:all_errs).and_return(false)
