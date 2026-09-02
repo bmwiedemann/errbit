@@ -158,6 +158,30 @@ and **unlink issue** buttons. **close issue** still needs a write scope.
 Users who have not linked a GitHub profile are unaffected: for them the tracker
 still uses the credentials configured on the App.
 
+#### GitHub App issue tracker
+
+The **github_app** issue tracker keeps the one-click **create issue** button
+without granting anyone a write-scoped token: issues are filed by a
+[GitHub App](https://docs.github.com/en/apps) that only holds the
+**Issues: Read & write** permission on the repositories it is installed on.
+
+1. Register a GitHub App for your organization (Settings → Developer settings
+   → GitHub Apps). It needs no webhook and no other permission than
+   **Issues: Read & write**; install it on the repositories Errbit should
+   file issues in.
+2. Set `GITHUB_APP_ID` to the App's id and `GITHUB_APP_PRIVATE_KEY` to the
+   `.pem` file the **Generate a private key** button on the App's settings
+   page downloads - either the path of the file, or its contents
+   (`\n`-escape the newlines if your environment cannot pass multiline
+   values). Note this is not the App's 40-character *client secret* - that
+   one belongs to the OAuth login flow and cannot sign App tokens.
+3. Fill in the **GitHub repo** field of the Errbit app and choose the
+   **github_app** issue tracker.
+
+Issues appear as created by the App's bot account, with a "Reported by ..."
+attribution line appended to the body. Closing issues from Errbit works the
+same way, and no `GITHUB_ACCESS_SCOPE` write scope is required for anyone.
+
 * `GITHUB_ORG_ID` is an optional environment variable you can set to your own
   GitHub organization id. If set, only users of the specified GitHub
   organization can log in to Errbit through GitHub. Errbit will provision

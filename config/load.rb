@@ -37,6 +37,8 @@ Errbit::Config = Configurator.run(
   github_access_scope: ["GITHUB_ACCESS_SCOPE"],
   github_api_url: ["GITHUB_API_URL"],
   github_site_title: ["GITHUB_SITE_TITLE"],
+  github_app_id: ["GITHUB_APP_ID"],
+  github_app_private_key: ["GITHUB_APP_PRIVATE_KEY"],
   # google
   google_authentication: ["GOOGLE_AUTHENTICATION"],
   google_auto_provision: ["GOOGLE_AUTO_PROVISION"],
